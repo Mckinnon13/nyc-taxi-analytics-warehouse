@@ -4,7 +4,10 @@ certifi==2026.6.17
 charset-normalizer==3.4.9
 idna==3.18
 jmespath==1.1.0
+numpy==2.5.1
+pandas==3.0.3
 psycopg2-binary==2.9.12
+pyarrow==25.0.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 requests==2.34.2
