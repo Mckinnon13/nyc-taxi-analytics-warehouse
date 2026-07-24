@@ -1,0 +1,7 @@
+# docker/airflow_requirements.txt
+
+requests
+boto3
+psycopg2-binary
+pandas
+pyarrow

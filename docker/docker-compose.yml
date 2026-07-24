@@ -24,18 +24,30 @@ services:
       - postgres_airflow_data:/var/lib/postgresql/data
 
   airflow:
-    image: apache/airflow:2.8.1
-    depends_on:
-      - postgres-airflow
-    environment:
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@postgres-airflow:5432/${AIRFLOW_DB_NAME}
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    ports:
-      - "8080:8080"
-    volumes:
-      - ../dags:/opt/airflow/dags
-    command: standalone
+      build:
+        context: ..
+        dockerfile: docker/Dockerfile
+      depends_on:
+        - postgres-airflow
+      environment:
+        AIRFLOW__CORE__EXECUTOR: LocalExecutor
+        AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@postgres-airflow:5432/${AIRFLOW_DB_NAME}
+        AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+        WAREHOUSE_DB_HOST: postgres-warehouse
+        WAREHOUSE_DB_PORT: 5432
+        WAREHOUSE_DB_NAME: ${WAREHOUSE_DB_NAME}
+        WAREHOUSE_DB_USER: ${WAREHOUSE_DB_USER}
+        WAREHOUSE_DB_PASSWORD: ${WAREHOUSE_DB_PASSWORD}
+        S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+        AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+        AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+        AWS_REGION: ${AWS_REGION}
+      ports:
+        - "8080:8080"
+      volumes:
+        - ../dags:/opt/airflow/dags
+        - ../src:/opt/airflow/src
+      command: standalone
 
 volumes:
   postgres_warehouse_data:
