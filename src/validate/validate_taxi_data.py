@@ -13,8 +13,8 @@ load_dotenv(dotenv_path="docker/.env")
 def get_db_connection():
     """Returns a psycopg2 connection to the warehouse Postgres DB."""
     return psycopg2.connect(
-        host="localhost",
-        port=5433,
+        host="postgres-warehouse",
+        port=5432,  # our mapped host port for postgres-warehouse
         dbname=os.getenv("WAREHOUSE_DB_NAME"),
         user=os.getenv("WAREHOUSE_DB_USER"),           
         password=os.getenv("WAREHOUSE_DB_PASSWORD")

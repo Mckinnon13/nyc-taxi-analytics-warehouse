@@ -40,7 +40,7 @@ def download_to_s3(year: int, month: int) -> bool:
     try:
         s3.head_object(Bucket=bucket, Key=s3_key)
         print(f"File already exists at {s3_key}, skipping download.")
-        return False
+        return True     # file is present and ready, just wasn't downloaded THIS run
     except ClientError as e:
         if e.response['Error']['Code'] == '404':
             pass  # doesn't exist yet — continue to download
