@@ -15,8 +15,8 @@ BASE_URL = "https://d37ci6vzurychx.cloudfront.net/trip-data"
 def get_db_connection():
     """Returns a psycopg2 connection to the warehouse Postgres DB."""
     return psycopg2.connect(
-        host="localhost",
-        port=5433,  # our mapped host port for postgres-warehouse
+        host="postgres-warehouse",
+        port=5432,  # our mapped host port for postgres-warehouse
         dbname=os.getenv("WAREHOUSE_DB_NAME"),
         user=os.getenv("WAREHOUSE_DB_USER"),
         password=os.getenv("WAREHOUSE_DB_PASSWORD")
@@ -59,6 +59,20 @@ def download_to_s3(year: int, month: int) -> bool:
 
     url = f"{BASE_URL}/{filename}"      #Build source URL
     response = requests.get(url, stream=True)       #Streaming HTTP request
+
+    if response.status_code == 403:
+        print(f"Data for {year}-{month:02d} not published yet (403 from source). Skipping.")
+        update_sql = (
+            "UPDATE pipeline_run_log "
+            "SET status = 'SKIPPED_NOT_PUBLISHED' "
+            "WHERE id = %s;"
+        )
+        cursor.execute(update_sql, (row_id,))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return False
+
     response.raise_for_status()  # throws an exception automatically if status is 4xx/5xx
     s3.upload_fileobj(response.raw, bucket, s3_key)     #Upload to S3 via streaming & Log success and return True
 

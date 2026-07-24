@@ -5,6 +5,6 @@ CREATE TABLE pipeline_run_log (
     year             INT NOT NULL,
     month            INT NOT NULL,
     row_count        BIGINT,
-    status           VARCHAR(20) NOT NULL,  -- 'SUCCESS', 'FAILED', 'IN_PROGRESS'
+    status           VARCHAR(30) NOT NULL,  -- 'SUCCESS', 'FAILED', 'IN_PROGRESS'
     processed_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
