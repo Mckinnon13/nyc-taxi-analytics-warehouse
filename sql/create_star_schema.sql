@@ -12,9 +12,9 @@ CREATE TABLE dim_date (
 
 CREATE TABLE dim_location (
     location_id  SERIAL PRIMARY KEY,
-    borough      VARCHAR(50) NOT NULL,
+    borough      VARCHAR(50),
     zone_name    VARCHAR(100) NOT NULL,
-    service_zone VARCHAR(50) NOT NULL
+    service_zone VARCHAR(50)
 );
 
 CREATE TABLE dim_vendor (
