@@ -3,14 +3,14 @@
 from airflow.decorators import dag, task
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-import sys
+import sys, uuid
 import os
 
 sys.path.append('/opt/airflow/src')
 
 from extract.download_taxi_data import download_to_s3
 from validate.validate_taxi_data import validate_taxi_data
-
+from load.load_to_warehouse import load_to_warehouse
 
 @dag(
     dag_id="nyc_taxi_monthly_pipeline",
@@ -38,7 +38,12 @@ def nyc_taxi_pipeline():
         year = target_date.year
         month = target_date.month
         file_ready = download_to_s3(year, month)
-        return {"year": year, "month": month, "file_ready": file_ready}
+        return {
+            "year": year,
+            "month": month,
+            "file_ready": file_ready,
+            "pipeline_run_id": str(uuid.uuid4())
+        }
 
     @task
     def validate_task(extract_result: dict):
@@ -50,8 +55,20 @@ def nyc_taxi_pipeline():
             return
         validate_taxi_data(extract_result["year"], extract_result["month"])
 
+    @task
+    def load_task(extract_result: dict, _validated=None):
+        if not extract_result["file_ready"]:
+            print(f"Skipping load — file not ready for {extract_result['year']}-{extract_result['month']:02d}")
+            return
+        load_to_warehouse(
+            extract_result["year"],
+            extract_result["month"],
+            extract_result.get("pipeline_run_id", "airflow-run")
+        )
+
     result = extract_task()
-    validate_task(result)
+    validated = validate_task(result)
+    load_task(result, validated)
 
 
 nyc_taxi_pipeline()
